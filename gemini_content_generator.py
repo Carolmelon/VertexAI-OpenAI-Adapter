@@ -7,7 +7,6 @@ import threading
 import time
 from parse_trunc import all_trunc_parser
 
-
 # REGION = "asia-northeast1"
 REGION = "asia-east1"
 # REGION = "asia-east2"
@@ -15,8 +14,9 @@ PROJECT_ID = "micro-citadel-425019-a2"
 MODEL = "gemini-1.5-pro"
 GCLOUD_PATH = "/Users/zebralee/Downloads/google-cloud-sdk/bin/gcloud"
 
-
 class GeminiContentGenerator:
+    """A class to generate content using various models and publishers."""
+
     def __init__(
         self,
         region=REGION,
@@ -26,6 +26,17 @@ class GeminiContentGenerator:
         publisher="google",
         model_version=None,  # For Mistral models
     ):
+        """
+        Initialize the GeminiContentGenerator.
+
+        Args:
+            region (str): The region where the model is deployed.
+            project_id (str): The project ID.
+            model (str): The model to use.
+            gcloud_path (str): The path to the gcloud executable.
+            publisher (str): The publisher of the model.
+            model_version (str, optional): The version of the model. Defaults to None.
+        """
         self.region = region
         self.project_id = project_id
         self.model = model
@@ -37,7 +48,7 @@ class GeminiContentGenerator:
             "content-type": "application/json",
             "Authorization": f"Bearer {self.get_gcloud_access_token()}",
         }
-        self.parser = all_trunc_parser[publisher] # 这个parser是把模型输出的trunc转换为纯文本
+        self.parser = all_trunc_parser[publisher]  # This parser converts the model's output trunc to plain text
         # Construct URL based on the publisher and model
         if self.publisher == "google":
             url = f"https://{self.region}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.region}/publishers/google/models/{self.model}:streamGenerateContent?alt=sse"
@@ -46,8 +57,8 @@ class GeminiContentGenerator:
         elif self.publisher == "mistralai":
             if not self.model_version:
                 raise ValueError("Model version is required for Mistral models.")
-            SELECTED_MODEL_VERSION = "" if self.model_version == "latest" else f"@{self.model_version}"
-            url = f"https://{self.region}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.region}/publishers/mistralai/models/{self.model}{SELECTED_MODEL_VERSION}:streamRawPredict"
+            selected_model_version = "" if self.model_version == "latest" else f"@{self.model_version}"
+            url = f"https://{self.region}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.region}/publishers/mistralai/models/{self.model}{selected_model_version}:streamRawPredict"
         elif self.publisher == "openapi":
             url = f"https://{self.region}-aiplatform.googleapis.com/v1beta1/projects/{self.project_id}/locations/{self.region}/endpoints/openapi/chat/completions"
         else:
@@ -55,11 +66,17 @@ class GeminiContentGenerator:
                 f"Unsupported publisher: {self.publisher}. Choose from 'google', 'anthropic', 'mistralai', or 'openapi'."
             )
         self.url = url
-        
+
         # Start the token refresh thread
         self.start_token_refresh_thread()
 
     def get_gcloud_access_token(self):
+        """
+        Get the gcloud access token.
+
+        Returns:
+            str: The access token.
+        """
         try:
             result = subprocess.run(
                 [self.gcloud_path, "auth", "print-access-token"],
@@ -74,10 +91,11 @@ class GeminiContentGenerator:
             return None
 
     def reload_token(self):
-        # token = self.get_gcloud_access_token()
+        """Reload the gcloud access token."""
         self.headers["Authorization"] = f"Bearer {self.get_gcloud_access_token()}"
 
     def start_token_refresh_thread(self):
+        """Start a thread to periodically refresh the gcloud access token."""
         def refresh_token_periodically():
             while True:
                 time.sleep(1800)  # Sleep for 30 minutes
@@ -95,8 +113,14 @@ class GeminiContentGenerator:
     def __repr__(self):
         return self.__str__()
 
-    # 这个方法还未修改，目前只适用于Google格式
     def generate_content(self, request_messages):
+        """
+        Generate content using the specified request messages.
+        这个方法还未修改，目前只适用于Google格式
+
+        Args:
+            request_messages (str or dict): The request messages, either as a file path or a dictionary.
+        """
         if isinstance(request_messages, str):
             # If request_messages is a string, assume it's a file path
             try:
@@ -113,8 +137,6 @@ class GeminiContentGenerator:
                 "Invalid input: request_messages should be a file path or a dictionary"
             )
             return
-
-        # url = f"https://{self.region}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.region}/publishers/google/models/{self.model}:streamGenerateContent?alt=sse"
 
         # Construct URL based on the publisher and model
         if self.publisher == "google":
@@ -143,16 +165,35 @@ class GeminiContentGenerator:
                 break
 
             partial_result = json.loads(event.data)
-            token = partial_result["candidates"][0]["content"]["parts"][0]["text"] # only suitable for google style request
+            token = partial_result["candidates"][0]["content"]["parts"][0]["text"]  # only suitable for google style request
             print(token, end="", flush=True)
 
-    # google/anthropic/mistralai/openapi messages -> 通过generate_content_stream_raw_format发起请求 -> google/anthropic/mistralai/openapi raw_format -> 根据publisher转换成单字yield返回
     def generate_content_stream(self, request_messages):
+        """
+        Generate a stream of content using the specified request messages.
+        处理流程: google/anthropic/mistralai/openapi messages -> 通过generate_content_stream_raw_format发起请求 -> google/anthropic/mistralai/openapi raw_format -> 根据publisher转换成单字yield返回
+
+        Args:
+            request_messages (str or dict): The request messages, either as a file path or a dictionary.
+
+        Yields:
+            str: The parsed truncated content.
+        """
         for partial_result in self.generate_content_stream_raw_format(request_messages):
             yield self.parser.parse_trunc(partial_result)
 
-    # google/anthropic/mistralai/openapi messages -> 请求 -> google/anthropic/mistralai/openapi raw_format
     def generate_content_stream_raw_format(self, request_messages, return_pure_text=True):
+        """
+        Generate a stream of raw content using the specified request messages.
+        处理流程: google/anthropic/mistralai/openapi messages -> 请求 -> google/anthropic/mistralai/openapi raw_format
+
+        Args:
+            request_messages (str or dict): The request messages, either as a file path or a dictionary.
+            return_pure_text (bool): Whether to return pure text or raw format.
+
+        Yields:
+            str or dict: The raw content or pure text.
+        """
         if isinstance(request_messages, str):
             # If request_messages is a string, assume it's a file path
             try:
@@ -170,8 +211,6 @@ class GeminiContentGenerator:
             )
             return
 
-        # url = f"https://{self.region}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.region}/publishers/google/models/{self.model}:streamGenerateContent?alt=sse"
-        
         response = requests.post(
             self.url, json=request_messages, headers=self.headers, stream=True
         )
@@ -186,9 +225,7 @@ class GeminiContentGenerator:
                 yield event.data
                 continue
             partial_result = json.loads(event.data)
-            # token = partial_result["candidates"][0]["content"]["parts"][0]["text"]
             yield partial_result
-
 
 # Define the all_generators dictionary at the top level
 all_generators = {}

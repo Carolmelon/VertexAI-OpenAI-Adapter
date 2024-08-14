@@ -10,11 +10,8 @@ import requests
 from gemini_content_generator import GeminiContentGenerator, all_generators
 from gemini_messages_converter import convert_to_new_format
 
-# generator = GeminiContentGenerator()
-
 app = Flask(__name__)
 CORS(app, resources={r"/v1/chat/completions": {"origins": "https://app.nextchat.dev"}})
-
 
 models = json.load(open("/Users/zebralee/Desktop/codings/gemini-convert/all_models.json"))
 
@@ -25,20 +22,31 @@ models_dict = {
     "openapi": "meta/llama3-405b-instruct-maas"
 }
 
-current_generator_name = 'anthropic' # 有四种取值: models_dict.keys()
+current_generator_name = 'anthropic'  # 有四种取值: models_dict.keys()
 
 generator = all_generators[current_generator_name]
 
 print(generator)
-
 print(f"current_generator_name: {current_generator_name}")
 
 @app.route('/')
 def index():
+    """
+    Render the index page.
+
+    Returns:
+        str: The content of the index.html file.
+    """
     return open('static/index.html').read()
 
 @app.route('/set_generator', methods=['POST'])
 def set_generator():
+    """
+    Set the current generator based on the request.
+
+    Returns:
+        flask.Response: JSON response indicating success or failure.
+    """
     global current_generator_name
     global generator
     new_generator = request.json['generator']
@@ -48,14 +56,24 @@ def set_generator():
         return jsonify({"success": True, "current_generator": current_generator_name})
     return jsonify({"success": False, "error": "Invalid generator name"})
 
-
 @app.route('/v1/models')
 def get_models():
-    # models = json.load(open("all_models.json"))
+    """
+    Get the list of models.
+
+    Returns:
+        flask.Response: JSON response containing the models.
+    """
     return models
 
 @app.route('/v1/chat/completions', methods=['POST', 'OPTIONS'])
 def chat_completions():
+    """
+    Handle chat completions.
+
+    Returns:
+        flask.Response: JSON response containing the chat completions.
+    """
     print(f"\033[31mcurrent_generator_name: {current_generator_name}\033[0m")
 
     if request.method == 'OPTIONS':
@@ -64,15 +82,14 @@ def chat_completions():
         response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         return response
-    
+
     data = request.json
     if not data.get("max_tokens"):
         data['max_tokens'] = 4000
     messages = data.get('messages', [])
     model_name = data.get('model', 'gemini-1.5-pro')
     stream_tokens = data.get("stream_tokens", False) or data.get("stream", False)
-    # response_iterator = get_response(messages)
-    
+
     if current_generator_name != "openapi":
         messages = convert_to_new_format(data, publisher=current_generator_name)
     else:
@@ -81,7 +98,7 @@ def chat_completions():
         
     print("="*100)
     print(json.dumps(data, ensure_ascii=False, indent=4))
-    print("-"*100)
+    print("-" * 100)
     print(json.dumps(messages, ensure_ascii=False, indent=4))
     
     # 非流式返回
@@ -90,26 +107,28 @@ def chat_completions():
     if not stream_tokens:
         response = generator.generate_content_stream(messages)
         response_arr = ''.join(list(response))
-        
+
         response_id = str(uuid.uuid4())
         created_time = int(time.time())
-        
+
         return_data = {
-            'id': response_id, 
-            'object': 'chat.completion', 
-            'created': created_time, 
-            'model': model_name, 
-            'prompt': [], 
+            'id': response_id,
+            'object': 'chat.completion',
+            'created': created_time,
+            'model': model_name,
+            'prompt': [],
             'choices': [
                 {
-                    'finish_reason': 'stop', 'seed': int(time.time() * 1000), 'logprobs': None, 'index': 0, 
+                    'finish_reason': 'stop', 'seed': int(time.time() * 1000),
+                    'logprobs': None, 'index': 0,
                     'message': {
-                        'role': 'assistant', 
+                        'role': 'assistant',
                         'content': response_arr
-                        }
                     }
-                ], 
-            'usage': {'prompt_tokens': 0, 'completion_tokens': len(response_arr), 'total_tokens': 0}}
+                }
+            ],
+            'usage': {'prompt_tokens': 0, 'completion_tokens': len(response_arr), 'total_tokens': 0}
+        }
         return return_data
     
     # 流式返回
@@ -142,7 +161,7 @@ def chat_completions():
                         "finish_reason": None,
                         "seed": None,
                         "delta": {
-                            "token_id": random.randint(1,100),
+                            "token_id": random.randint(1, 100),
                             "role": "assistant",
                             "content": last_content,
                             "tool_calls": None
@@ -165,9 +184,9 @@ def chat_completions():
                     "text": last_content,
                     "logprobs": None,
                     "finish_reason": "length",
-                    "seed": int(time.time() * 1000),  # 模拟一个种子值
+                    "seed": int(time.time() * 1000),
                     "delta": {
-                        "token_id": random.randint(1,100),
+                        "token_id": random.randint(1, 100),
                         "role": "assistant",
                         "content": last_content,
                         "tool_calls": None
@@ -175,10 +194,8 @@ def chat_completions():
                 }],
                 "model": model_name,
                 "usage": {
-                    # "prompt_tokens": len(messages[0]['content']),
                     "prompt_tokens": 0,
                     "completion_tokens": total_tokens,
-                    # "total_tokens": len(messages[0]['content']) + total_tokens
                     "total_tokens": 0,
                 }
             }
@@ -187,7 +204,5 @@ def chat_completions():
 
     return Response(generate(), content_type='text/event-stream')
 
-
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=9876)
-
