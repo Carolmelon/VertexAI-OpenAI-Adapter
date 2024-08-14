@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Selector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin-top: 0;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #status {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Select Generator</h1>
+        <select id="generatorSelect">
+            <option value="google">Google</option>
+            <option value="anthropic">Anthropic</option>
+            <option value="mistralai">MistralAI</option>
+            <option value="openapi">OpenAPI</option>
+        </select>
+        <button onclick="setGenerator()">Set Generator</button>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        function setGenerator() {
+            const generator = document.getElementById('generatorSelect').value;
+            fetch('/set_generator', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({generator: generator}),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('status').textContent = `Current generator: ${data.current_generator}`;
+                } else {
+                    document.getElementById('status').textContent = `Error: ${data.error}`;
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                document.getElementById('status').textContent = 'An error occurred';
+            });
+        }
+    </script>
+</body>
+</html>

@@ -77,6 +77,11 @@ def parse_trunc(trunc, publisher):
 
 # 测试用例
 def test_parse_trunc():
+    # 测试用例尚未更新
+    # 一般来说，需要解析的数据里面不包含"data: "
+    # "data: "通常在SSE情况下，会被http客户端去掉，因此测试用例无需包含"data: "
+    
+    
     # Google 测试用例
     google_parser = TruncParser("google")
     assert google_parser.parse_trunc('{"candidates": [{"content": {"role": "model", "parts": [{"text": "茴"}]}}]}\n') == "茴"

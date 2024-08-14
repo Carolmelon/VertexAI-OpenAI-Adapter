@@ -1,0 +1,185 @@
+{
+    "data": [
+        {
+            "id": "gemini-1.5-pro",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "dall-e-3",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-3.5-turbo",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-3.5-turbo-0125",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-3.5-turbo-0613",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-3.5-turbo-1106",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-3.5-turbo-16k",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-3.5-turbo-16k-0613",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-3.5-turbo-instruct",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-4",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-4-0125-preview",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-4-0613",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-4-1106-preview",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-4-1106-vision-preview",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-4-32k",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-4-32k-0613",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-4-turbo",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-4-turbo-2024-04-09",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-4-turbo-preview",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-4-vision-preview",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-4o",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-4o-2024-05-13",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-4o-mini",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "gpt-4o-mini-2024-07-18",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "text-embedding-3-large",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "text-embedding-3-small",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "text-embedding-ada-002",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "tts-1",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "tts-az-1",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        },
+        {
+            "id": "whisper-1",
+            "object": "model",
+            "created": 581983200,
+            "owned_by": "system"
+        }
+    ],
+    "object": "list"
+}
