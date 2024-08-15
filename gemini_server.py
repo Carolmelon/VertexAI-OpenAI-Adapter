@@ -27,7 +27,7 @@ current_generator_name = 'anthropic'  # 有四种取值: models_dict.keys()
 generator = all_generators[current_generator_name]
 
 print(generator)
-print(f"current_generator_name: {current_generator_name}")
+print(f"\033[32mcurrent_generator_name: {current_generator_name}\033[0m")
 
 @app.route('/')
 def index():
@@ -53,6 +53,8 @@ def set_generator():
     if new_generator in models_dict.keys():
         current_generator_name = new_generator
         generator = all_generators[current_generator_name]
+        print(f"\033[32mcurrent_generator_name: {current_generator_name}\033[0m")
+        print(f"\033[36mcurrent_model_name: {models_dict[current_generator_name]}\033[0m")
         return jsonify({"success": True, "current_generator": current_generator_name})
     return jsonify({"success": False, "error": "Invalid generator name"})
 
@@ -87,7 +89,11 @@ def chat_completions():
     if not data.get("max_tokens"):
         data['max_tokens'] = 4000
     messages = data.get('messages', [])
-    model_name = data.get('model', 'gemini-1.5-pro')
+    # model_name = data.get('model', 'gemini-1.5-pro')
+    model_name = models_dict[current_generator_name]
+    
+    print(f"\033[35mmodel_name: {model_name}\033[0m")
+    
     stream_tokens = data.get("stream_tokens", False) or data.get("stream", False)
 
     if current_generator_name != "openapi":
