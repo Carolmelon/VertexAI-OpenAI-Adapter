@@ -70,6 +70,17 @@ class GeminiContentGenerator:
         # Start the token refresh thread
         self.start_token_refresh_thread()
 
+        # 从环境变量中读取代理设置
+        http_proxy = os.getenv('http_proxy')
+        https_proxy = os.getenv('https_proxy')
+        all_proxy = os.getenv('all_proxy')
+        # proxy
+        self.proxies = {
+            'http': http_proxy,
+            'https': https_proxy,
+            'all': all_proxy
+        }
+
     def get_gcloud_access_token(self):
         """
         Get the gcloud access token.
@@ -108,7 +119,9 @@ class GeminiContentGenerator:
     def __str__(self):
         return (f"GeminiContentGenerator(region={self.region}, project_id={self.project_id}, "
                 f"model={self.model}, gcloud_path={self.gcloud_path}, publisher={self.publisher}, "
-                f"model_version={self.model_version}, headers={self.headers}, url={self.url})")
+                f"model_version={self.model_version}, headers={self.headers}, url={self.url}), "
+                f"proxies={self.proxies}"
+                )
 
     def __repr__(self):
         return self.__str__()
@@ -212,7 +225,7 @@ class GeminiContentGenerator:
             return
 
         response = requests.post(
-            self.url, json=request_messages, headers=self.headers, stream=True
+            self.url, json=request_messages, headers=self.headers, stream=True, proxies=self.proxies
         )
         response.raise_for_status()
 
